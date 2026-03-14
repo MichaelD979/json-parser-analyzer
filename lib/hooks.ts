@@ -1,74 +1,85 @@
 'use client';
 
-import {
-  ActiveViewTab,
-  ConversionTarget,
-  IndentStyle,
-  JsonProcessState,
-  FormattingOptions,
-  MinificationOptions,
-  ConversionOptions,
-} from '@/lib/types';
-import { JsonParserStore, useJsonParserStore } from '@/lib/store';
+import { useJsonToolStore } from '@/lib/store';
 
-// Helper function to create typed selectors for the store
-const createSelector = <T>(
-  selector: (state: JsonParserStore) => T
-) => {
-  return () => useJsonParserStore(selector);
-};
+// --- State Hooks ---
 
-// --- Core JSON Data State Hooks ---
-export const useJsonInput = createSelector((state) => state.json.input);
-export const useJsonOutput = createSelector((state) => state.json.output);
-export const useJsonIsValid = createSelector((state) => state.json.isValid);
-export const useJsonError = createSelector((state) => state.json.error);
-export const useJsonParsed = createSelector((state) => state.json.parsed);
-export const useIsProcessing = createSelector((state) => state.json.isProcessing);
-export const useJsonProcessState = createSelector((state) => state.json);
+export const useJsonInput = () => useJsonToolStore((state) => state.jsonInput);
+export const useParsedData = () => useJsonToolStore((state) => state.parsedData);
+export const useLoading = () => useJsonToolStore((state) => state.loading);
+export const useJsonErrorLine = () => useJsonToolStore((state) => state.jsonErrorLine);
+export const useJsonErrorColumn = () => useJsonToolStore((state) => state.jsonErrorColumn);
+export const useActiveTab = () => useJsonToolStore((state) => state.activeTab);
+export const useFormatSpacing = () => useJsonToolStore((state) => state.formatSpacing);
+export const useTreeData = () => useJsonToolStore((state) => state.treeData);
+export const useExpandedNodePaths = () => useJsonToolStore((state) => state.expandedNodePaths);
+export const useSearchTerm = () => useJsonToolStore((state) => state.searchTerm);
+export const useSearchResultsPaths = () => useJsonToolStore((state) => state.searchResultsPaths);
+export const useConversionTarget = () => useJsonToolStore((state) => state.conversionTarget);
+export const useConvertedOutput = () => useJsonToolStore((state) => state.convertedOutput);
+export const useIsConverting = () => useJsonToolStore((state) => state.isConverting);
 
-export const useSetJsonInput = createSelector((state) => state.setJsonInput);
-export const useSetJsonOutput = createSelector((state) => state.setJsonOutput);
-export const useSetJsonIsValid = createSelector((state) => state.setJsonIsValid);
-export const useSetJsonError = createSelector((state) => state.setJsonError);
-export const useSetJsonParsed = createSelector((state) => state.setJsonParsed);
-export const useSetIsProcessing = createSelector((state) => state.setIsProcessing);
-export const useClearAll = createSelector((state) => state.clearAll);
+// --- Action Hooks ---
 
-// --- Formatting Options Hooks ---
-export const useFormattingOptions = createSelector((state) => state.formatting);
-export const useIndentStyle = createSelector((state) => state.formatting.indentStyle);
-export const useSortKeys = createSelector((state) => state.formatting.sortKeys);
+export const useSetJsonInput = () => useJsonToolStore((state) => state.setJsonInput);
+export const useSetParsedData = () => useJsonToolStore((state) => state.setParsedData);
+export const useSetLoading = () => useJsonToolStore((state) => state.setLoading);
+export const useSetJsonErrorLine = () => useJsonToolStore((state) => state.setJsonErrorLine);
+export const useSetJsonErrorColumn = () => useJsonToolStore((state) => state.setJsonErrorColumn);
+export const useSetActiveTab = () => useJsonToolStore((state) => state.setActiveTab);
+export const useSetFormatSpacing = () => useJsonToolStore((state) => state.setFormatSpacing);
+export const useSetTreeData = () => useJsonToolStore((state) => state.setTreeData);
+export const useToggleNodeExpansion = () => useJsonToolStore((state) => state.toggleNodeExpansion);
+export const useSetSearchTerm = () => useJsonToolStore((state) => state.setSearchTerm);
+export const useSetSearchResultsPaths = () => useJsonToolStore((state) => state.setSearchResultsPaths);
+export const useSetConversionTarget = () => useJsonToolStore((state) => state.setConversionTarget);
+export const useSetConvertedOutput = () => useJsonToolStore((state) => state.setConvertedOutput);
+export const useSetIsConverting = () => useJsonToolStore((state) => state.setIsConverting);
 
-export const useSetIndentStyle = createSelector((state) => state.setIndentStyle);
-export const useSetSortKeys = createSelector((state) => state.setSortKeys);
+// --- Combined State & Action Hooks (for convenience, use sparingly to avoid unnecessary re-renders) ---
 
-// --- Minification Options Hooks ---
-export const useMinificationOptions = createSelector((state) => state.minification);
-export const useRemoveWhitespace = createSelector((state) => state.minification.removeWhitespace);
+/**
+ * Hook to access both jsonInput state and setJsonInput action.
+ * Use with caution as it will trigger re-renders if either changes.
+ */
+export const useJsonInputAndSetter = () =>
+  useJsonToolStore((state) => ({
+    jsonInput: state.jsonInput,
+    setJsonInput: state.setJsonInput,
+  }));
 
-export const useSetRemoveWhitespace = createSelector((state) => state.setRemoveWhitespace);
+/**
+ * Hook to access both loading state and setLoading action.
+ */
+export const useLoadingAndSetter = () =>
+  useJsonToolStore((state) => ({
+    loading: state.loading,
+    setLoading: state.setLoading,
+  }));
 
-// --- Conversion Options Hooks ---
-export const useConversionOptions = createSelector((state) => state.conversion);
-export const useConversionTarget = createSelector((state) => state.conversion.target);
+/**
+ * Hook to access both activeTab state and setActiveTab action.
+ */
+export const useActiveTabAndSetter = () =>
+  useJsonToolStore((state) => ({
+    activeTab: state.activeTab,
+    setActiveTab: state.setActiveTab,
+  }));
 
-export const useSetConversionTarget = createSelector((state) => state.setConversionTarget);
+/**
+ * Hook to access conversionTarget state and setConversionTarget action.
+ */
+export const useConversionTargetAndSetter = () =>
+  useJsonToolStore((state) => ({
+    conversionTarget: state.conversionTarget,
+    setConversionTarget: state.setConversionTarget,
+  }));
 
-// --- UI State Hooks ---
-export const useActiveTab = createSelector((state) => state.ui.activeTab);
-export const useTreeSearchTerm = createSelector((state) => state.ui.treeSearchTerm);
-export const useExpandedTreeKeys = createSelector((state) => state.ui.expandedTreeKeys);
-export const useHighlightedTreePath = createSelector((state) => state.ui.highlightedTreePath);
-export const useInputEditorCursorPosition = createSelector(
-  (state) => state.ui.inputEditorCursorPosition
-);
-
-// Assuming these setters exist in the JsonParserStore based on the provided types and typical Zustand patterns.
-export const useSetActiveTab = createSelector((state) => state.setActiveTab);
-export const useSetTreeSearchTerm = createSelector((state) => state.setTreeSearchTerm);
-export const useSetExpandedTreeKeys = createSelector((state) => state.setExpandedTreeKeys);
-export const useSetHighlightedTreePath = createSelector((state) => state.setHighlightedTreePath);
-export const useSetInputEditorCursorPosition = createSelector(
-  (state) => state.setInputEditorCursorPosition
-);
+/**
+ * Hook to access isConverting state and setIsConverting action.
+ */
+export const useIsConvertingAndSetter = () =>
+  useJsonToolStore((state) => ({
+    isConverting: state.isConverting,
+    setIsConverting: state.setIsConverting,
+  }));

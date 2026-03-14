@@ -1,29 +1,92 @@
-// app/page.tsx
-// This page is a Server Component, as it only renders other components and does not use client-side hooks or browser APIs itself.
+'use client';
 
+import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { PasteJson } from '@/components/Paste-json';
-import { ValidateJson } from '@/components/Validate-json';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 
-export default function HomePage() {
+// Feature components (located in the parent directory relative to app/page.tsx)
+import { PasteJson } from '../components/PasteJson';
+import { UploadJsonFile } from '../components/UploadJsonFile';
+import { ValidateJson } from '../components/ValidateJson';
+import { useJsonToolStore } from '@/lib/store';
+
+/**
+ * Renders the main landing page for the JSON Toolkit application.
+ * This page orchestrates the primary features: JSON input (paste/upload)
+ * and JSON processing (validation, formatting).
+ */
+export default function Page() {
+  const { jsonInput, parsedData, loading } = useJsonToolStore();
+
+  // Determine the validity status and corresponding badge variant
+  const isJsonValid: boolean = parsedData?.isValid ?? false;
+  const hasInput: boolean = jsonInput.trim().length > 0;
+
+  let validationBadgeVariant: 'default' | 'success' | 'error' | 'info' = 'default';
+  let validationBadgeText: string = 'Awaiting JSON input';
+
+  if (loading) {
+    validationBadgeVariant = 'info';
+    validationBadgeText = 'Processing...';
+  } else if (!hasInput) {
+    validationBadgeVariant = 'default';
+    validationBadgeText = 'Awaiting JSON input';
+  } else if (isJsonValid) {
+    validationBadgeVariant = 'success';
+    validationBadgeText = 'Valid JSON';
+  } else if (parsedData && parsedData.error) {
+    validationBadgeVariant = 'error';
+    validationBadgeText = 'Invalid JSON';
+  }
+
   return (
-    <main className="container mx-auto px-4 py-8 max-w-7xl">
-      <Card className="shadow-lg border border-gray-200 bg-white">
-        <CardHeader className="border-b border-gray-200 pb-4">
-          <CardTitle className="text-3xl font-bold text-center text-gray-800">JSON DevTool</CardTitle>
+    <main className="container mx-auto py-8 px-4 max-w-7xl">
+      <Card className="shadow-lg border-2 border-gray-100 dark:border-gray-800">
+        <CardHeader className="flex flex-col md:flex-row items-center justify-between space-y-2 md:space-y-0 pb-4">
+          <CardTitle className="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-gray-50">
+            JSON Toolkit
+          </CardTitle>
+          <div className="flex items-center space-x-3 mt-2 md:mt-0">
+            <Badge variant={validationBadgeVariant} dot className="px-3 py-1 text-sm font-medium">
+              {validationBadgeText}
+            </Badge>
+          </div>
         </CardHeader>
-        <CardContent className="grid md:grid-cols-2 gap-8 p-6">
-          {/* Left Column: JSON Input and Actions */}
-          <section className="flex flex-col gap-6 md:border-r md:border-gray-200 md:pr-6">
-            <h2 className="text-2xl font-semibold text-gray-700">Input JSON</h2>
-            <PasteJson />
-          </section>
+        <CardContent className="pt-6">
+          <Tabs defaultValue="input" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-2 h-12 text-base">
+              <TabsTrigger value="input" className="text-lg font-semibold">Input</TabsTrigger>
+              <TabsTrigger value="validation" className="text-lg font-semibold">Validation & Formatting</TabsTrigger>
+            </TabsList>
 
-          {/* Right Column: JSON Output & Validation */}
-          <section className="flex flex-col gap-6 md:pl-6">
-            <h2 className="text-2xl font-semibold text-gray-700">Output & Validation</h2>
-            <ValidateJson />
-          </section>
+            {/* Input Tab Content */}
+            <TabsContent value="input" className="space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card className="shadow-sm">
+                  <CardHeader>
+                    <CardTitle className="text-xl font-bold text-gray-800 dark:text-gray-100">Paste JSON</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <PasteJson />
+                  </CardContent>
+                </Card>
+                <Card className="shadow-sm">
+                  <CardHeader>
+                    <CardTitle className="text-xl font-bold text-gray-800 dark:text-gray-100">Upload JSON File</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <UploadJsonFile />
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
+            {/* Validation & Formatting Tab Content */}
+            <TabsContent value="validation" className="space-y-4">
+              <ValidateJson />
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
     </main>

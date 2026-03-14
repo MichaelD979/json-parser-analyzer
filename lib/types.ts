@@ -1,125 +1,30 @@
-// lib/types.ts
-
-// --- Core JSON Data State ---
-
-/**
- * Represents the current state of the JSON input and output,
- * including validation results and the parsed object.
- */
-export interface JsonProcessState {
-  /** The raw JSON string provided by the user. */
-  input: string;
-  /** The processed JSON string (e.g., formatted, minified, converted). */
-  output: string;
-  /** True if the input JSON is syntactically valid. */
+export interface ParsedJsonData {
+  originalInput: string;
+  parsedObject: any | null; // The actual JavaScript object/array/primitive after parsing
   isValid: boolean;
-  /** Error message if the JSON is invalid, otherwise null. */
-  error: string | null;
-  /** The parsed JavaScript object/array if input is valid, otherwise null. */
-  parsed: unknown | null;
-  /** True if a processing operation (parsing, formatting, conversion) is currently active. */
-  isProcessing: boolean;
+  error: string | null; // Error message if parsing failed
+  sizeBytes: number | null; // Size of the original input string in bytes
+  parseTimeMs: number | null; // Time taken to parse the JSON
+  formattedJson?: string; // Optional: A formatted version of the JSON string
+  minifiedJson?: string; // Optional: A minified version of the JSON string
 }
 
-// --- Formatting Options ---
-
-export type IndentStyle = '2Spaces' | '4Spaces' | 'Tabs';
-
-/**
- * Options for formatting JSON output.
- */
-export interface FormattingOptions {
-  /** The style of indentation to use (e.g., 2 spaces, 4 spaces, tabs). */
-  indentStyle: IndentStyle;
-  /** Whether to sort object keys alphabetically when formatting. */
-  sortKeys: boolean;
+export interface TreeViewerNode {
+  key: string | number | null; // The key for an object property, index for an array item, or null for the root
+  value: any; // The actual value of the node
+  type: 'object' | 'array' | 'string' | 'number' | 'boolean' | 'null'; // The JSON type of the value
+  path: string; // Full JSON path to this node (e.g., 'data[0].name')
+  isExpanded: boolean; // UI state: whether this node is currently expanded in the tree viewer
+  children: TreeViewerNode[] | null; // Child nodes if the value is an object or an array
+  valuePreview: string; // A concise string representation of the value for display (e.g., "{...}", "[...]", "hello world")
+  length?: number; // Number of items for arrays/objects, or string length for strings
+  isRoot?: boolean; // True if this is the very top-level node
 }
 
-// --- Minification Options ---
-
-/**
- * Options for minifying JSON output.
- */
-export interface MinificationOptions {
-  /** Whether to remove all unnecessary whitespace, including newlines, from the JSON. */
-  removeWhitespace: boolean;
+export interface ValidationResult {
+  isValid: boolean;
+  message: string; // A general message indicating success or the primary error
+  errorDetails?: string; // More specific error details, like a stack trace or detailed parsing error
 }
 
-// --- Conversion Options ---
-
-/**
- * Supported target formats for JSON conversion.
- */
-export type ConversionTarget = 'yaml' | 'csv' | 'typescript'; // Extend as needed
-
-/**
- * Options for converting JSON to other formats.
- */
-export interface ConversionOptions {
-  /** The desired target format for conversion. Null if no conversion is selected/applied. */
-  target: ConversionTarget | null;
-}
-
-// --- UI State ---
-
-/**
- * Defines the currently active tab in the main application interface.
- */
-export type ActiveViewTab = 'editor' | 'tree' | 'table' | 'settings';
-
-// --- Editor Settings ---
-
-/**
- * Options specifically for the Monaco Editor component instances.
- */
-export interface EditorSettings {
-  /** Whether to display line numbers in the editor. */
-  showLineNumbers: boolean;
-  /** Whether text should wrap to the next line if it exceeds the editor width. */
-  wordWrap: 'off' | 'on';
-  /** Whether the minimap (code overview scrollbar) is enabled. */
-  minimapEnabled: boolean;
-  /** Whether the editor content is read-only (e.g., for the output editor). */
-  readOnly: boolean;
-  /** Whether to automatically format JSON content when pasted into the editor. */
-  autoFormatOnPaste: boolean;
-}
-
-// --- Global Application Settings ---
-
-export type AppTheme = 'light' | 'dark' | 'system';
-
-/**
- * Global application-wide settings that persist across sessions.
- */
-export interface GlobalAppSettings {
-  /** The current theme of the application (light, dark, or system preference). */
-  theme: AppTheme;
-  /** Whether to automatically save the user's input JSON to local storage. */
-  autoSaveInput: boolean;
-  /** Specific settings for the Monaco Editor instances used throughout the app. */
-  editor: EditorSettings;
-}
-
-// --- Main Application State ---
-
-/**
- * The root interface for the entire application's state,
- * typically used with a state management library like Zustand.
- */
-export interface AppState {
-  /** Current state of JSON input, output, validation, and parsed data. */
-  json: JsonProcessState;
-  /** User-defined preferences for how JSON should be formatted. */
-  formatting: FormattingOptions;
-  /** User-defined preferences for how JSON should be minified. */
-  minification: MinificationOptions;
-  /** User-defined preferences for converting JSON to other data formats. */
-  conversion: ConversionOptions;
-  /** UI-specific state, such as the currently active tab. */
-  ui: {
-    activeTab: ActiveViewTab;
-  };
-  /** Global application settings that influence behavior and appearance. */
-  settings: GlobalAppSettings;
-}
+export type ConversionTarget = 'xml' | 'csv' | 'yaml' | 'json'; // Potential targets for JSON conversion
